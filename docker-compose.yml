@@ -36,6 +36,7 @@ services:
       - elasticsearch
 
   elasticsearch:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/elasticsearch:v1.0.0
     build:
       context: elasticsearch/
       args:
@@ -75,6 +76,7 @@ services:
     restart: unless-stopped
 
   logstash:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/logstash:v1.0.0
     build:
       context: logstash/
       args:
@@ -111,6 +113,7 @@ services:
     restart: unless-stopped
 
   kibana:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/kibana:v1.0.0
     build:
       context: kibana/
       args:
