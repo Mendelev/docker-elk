@@ -31,6 +31,7 @@ services:
       BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
     networks:
       - elk_network
+      - traefik-public
     depends_on:
       - elasticsearch
 
@@ -42,6 +43,19 @@ services:
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
       - elasticsearch:/usr/share/elasticsearch/data:Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.orchestrator-http.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-http.entrypoints=http
+          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
+          - traefik.http.routers.orchestrator-https.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-https.entrypoints=https
+          - traefik.http.routers.orchestrator-https.tls=true
+          - traefik.http.routers.orchestrator-https.tls.certresolver=le
+          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
     ports:
       - 9200:9200
       - 9300:9300
@@ -57,6 +71,7 @@ services:
       discovery.type: single-node
     networks:
       - elk_network
+      - traefik-public
     restart: unless-stopped
 
   logstash:
@@ -67,6 +82,19 @@ services:
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.orchestrator-http.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-http.entrypoints=http
+          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
+          - traefik.http.routers.orchestrator-https.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-https.entrypoints=https
+          - traefik.http.routers.orchestrator-https.tls=true
+          - traefik.http.routers.orchestrator-https.tls.certresolver=le
+          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
     ports:
       - 5044:5044
       - 50000:50000/tcp
@@ -77,6 +105,7 @@ services:
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
     networks:
       - elk_network
+      - traefik-public
     depends_on:
       - elasticsearch
     restart: unless-stopped
@@ -88,12 +117,26 @@ services:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.orchestrator-http.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-http.entrypoints=http
+          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
+          - traefik.http.routers.orchestrator-https.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.orchestrator-https.entrypoints=https
+          - traefik.http.routers.orchestrator-https.tls=true
+          - traefik.http.routers.orchestrator-https.tls.certresolver=le
+          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
     ports:
       - 5601:5601
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     networks:
       - elk_network
+      - traefik-public
     depends_on:
       - elasticsearch
     restart: unless-stopped
