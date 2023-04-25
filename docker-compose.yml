@@ -67,7 +67,7 @@ services:
       # Bootstrap password.
       # Used to initialize the keystore during the initial startup of
       # Elasticsearch. Ignored on subsequent runs.
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       # Use single node discovery in order to disable production mode and avoid bootstrap checks.
       # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
       discovery.type: single-node
@@ -97,7 +97,7 @@ services:
           - traefik.http.routers.orchestrator-https.entrypoints=https
           - traefik.http.routers.orchestrator-https.tls=true
           - traefik.http.routers.orchestrator-https.tls.certresolver=le
-          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
+          - traefik.http.services.orchestrator.loadbalancer.server.port=5044
     ports:
       - 5044:5044
       - 50000:50000/tcp
@@ -105,7 +105,7 @@ services:
       - 9600:9600
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD}
     networks:
       - elk_network
       - traefik-public
@@ -133,11 +133,11 @@ services:
           - traefik.http.routers.orchestrator-https.entrypoints=https
           - traefik.http.routers.orchestrator-https.tls=true
           - traefik.http.routers.orchestrator-https.tls.certresolver=le
-          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
+          - traefik.http.services.orchestrator.loadbalancer.server.port=5601
     ports:
       - 5601:5601
     environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
     networks:
       - elk_network
       - traefik-public
