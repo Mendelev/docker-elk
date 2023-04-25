@@ -15,6 +15,11 @@ services:
     ports:
       - 3002:3002
     networks:
-      - elk
+      - elk_elk_network
     depends_on:
       - elasticsearch
+
+networks:
+    elk_elk_network:
+        external: true
+

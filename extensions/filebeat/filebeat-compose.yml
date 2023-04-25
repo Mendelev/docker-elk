@@ -30,6 +30,10 @@ services:
       FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
       BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
     networks:
-      - elk
+      - elk_elk_network
     depends_on:
       - elasticsearch
+
+networks:
+    elk_elk_network:
+        external: true

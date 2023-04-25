@@ -11,6 +11,10 @@ services:
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
     networks:
-      - elk
+      - elk_elk_network
     depends_on:
       - elasticsearch
+
+networks:
+    elk_elk_network:
+        external: true
