@@ -50,14 +50,14 @@ services:
           - traefik.enable=true
           - traefik.docker.network=traefik-public
           - traefik.constraint-label=traefik-public
-          - traefik.http.routers.orchestrator-http.rule=Host(`elasticsearch.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-http.entrypoints=http
-          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
-          - traefik.http.routers.orchestrator-https.rule=Host(`elasticsearch.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-https.entrypoints=https
-          - traefik.http.routers.orchestrator-https.tls=true
-          - traefik.http.routers.orchestrator-https.tls.certresolver=le
-          - traefik.http.services.orchestrator.loadbalancer.server.port=9200
+          - traefik.http.routers.elasticsearch-http.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.elasticsearch-http.entrypoints=http
+          - traefik.http.routers.elasticsearch-http.middlewares=https-redirect
+          - traefik.http.routers.elasticsearch-https.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.elasticsearch-https.entrypoints=https
+          - traefik.http.routers.elasticsearch-https.tls=true
+          - traefik.http.routers.elasticsearch-https.tls.certresolver=le
+          - traefik.http.services.elasticsearch.loadbalancer.server.port=9200
     ports:
       - 9200:9200
       - 9300:9300
@@ -90,14 +90,14 @@ services:
           - traefik.enable=true
           - traefik.docker.network=traefik-public
           - traefik.constraint-label=traefik-public
-          - traefik.http.routers.orchestrator-http.rule=Host(`logstash.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-http.entrypoints=http
-          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
-          - traefik.http.routers.orchestrator-https.rule=Host(`logstash.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-https.entrypoints=https
-          - traefik.http.routers.orchestrator-https.tls=true
-          - traefik.http.routers.orchestrator-https.tls.certresolver=le
-          - traefik.http.services.orchestrator.loadbalancer.server.port=5044
+          - traefik.http.routers.logstash-http.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.logstash-http.entrypoints=http
+          - traefik.http.routers.logstash-http.middlewares=https-redirect
+          - traefik.http.routers.logstash-https.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.logstash-https.entrypoints=https
+          - traefik.http.routers.logstash-https.tls=true
+          - traefik.http.routers.logstash-https.tls.certresolver=le
+          - traefik.http.services.logstash.loadbalancer.server.port=5044
     ports:
       - 5044:5044
       - 50000:50000/tcp
@@ -126,14 +126,14 @@ services:
           - traefik.enable=true
           - traefik.docker.network=traefik-public
           - traefik.constraint-label=traefik-public
-          - traefik.http.routers.orchestrator-http.rule=Host(`kibana.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-http.entrypoints=http
-          - traefik.http.routers.orchestrator-http.middlewares=https-redirect
-          - traefik.http.routers.orchestrator-https.rule=Host(`kibana.elk.smarthis.com.br`)
-          - traefik.http.routers.orchestrator-https.entrypoints=https
-          - traefik.http.routers.orchestrator-https.tls=true
-          - traefik.http.routers.orchestrator-https.tls.certresolver=le
-          - traefik.http.services.orchestrator.loadbalancer.server.port=5601
+          - traefik.http.routers.kibana-http.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.kibana-http.entrypoints=http
+          - traefik.http.routers.kibana-http.middlewares=https-redirect
+          - traefik.http.routers.kibana-https.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.kibana-https.entrypoints=https
+          - traefik.http.routers.kibana-https.tls=true
+          - traefik.http.routers.kibana-https.tls.certresolver=le
+          - traefik.http.services.kibana.loadbalancer.server.port=5601
     ports:
       - 5601:5601
     environment:
