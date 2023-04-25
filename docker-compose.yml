@@ -10,6 +10,7 @@ services:
   # subsequent runs, the service simply returns immediately, without performing
   # any modification to existing users.
   setup:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/setup:v1.0.0
     build:
       context: setup/
       args:
