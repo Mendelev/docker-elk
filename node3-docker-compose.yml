@@ -30,11 +30,11 @@ services:
       MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
       BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
     networks:
-      - elk_network
+      - elk
     depends_on:
       - elasticsearch
 
-  elasticsearch:
+  elasticsearch01:
     build:
       context: elasticsearch/
       args:
@@ -46,7 +46,11 @@ services:
       - 9200:9200
       - 9300:9300
     environment:
-      node.name: elasticsearch
+      node.name: elasticsearch03
+      # Internal DNS Instance names in this case are elk-1, elk-2 and elk-3
+      discovery.seed_hosts: elk-2,elk-1
+      cluster.initial_master_nodes: elk-2,elk-1
+      bootstrap.memory_lock: true
       ES_JAVA_OPTS: -Xms512m -Xmx512m
       # Bootstrap password.
       # Used to initialize the keystore during the initial startup of
@@ -54,9 +58,9 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       # Use single node discovery in order to disable production mode and avoid bootstrap checks.
       # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
-      discovery.type: single-node
+      # discovery.type: single-node
     networks:
-      - elk_network
+      - elk
     restart: unless-stopped
 
   logstash:
@@ -76,7 +80,7 @@ services:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
     networks:
-      - elk_network
+      - elk
     depends_on:
       - elasticsearch
     restart: unless-stopped
@@ -93,15 +97,14 @@ services:
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     networks:
-      - elk_network
+      - elk
     depends_on:
       - elasticsearch
     restart: unless-stopped
 
 networks:
-  elk_network:
-    #driver: bridge
-    attachable: true
+  elk:
+    driver: bridge
 
 volumes:
   setup:

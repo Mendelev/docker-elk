@@ -35,11 +35,15 @@ services:
     # Elastic Agent does not retry failed connections to Kibana upon the initial enrollment phase.
     restart: on-failure
     networks:
-      - elk
+      - elk_elk_network
     depends_on:
       - elasticsearch
       - kibana
       - fleet-server
+
+networks:
+    elk_elk_network:
+        external: true
 
 volumes:
   apm-server:
