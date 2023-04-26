@@ -1,0 +1,158 @@
+version: '3.7'
+
+services:
+
+  # The 'setup' service runs a one-off script which initializes users inside
+  # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
+  # values of the passwords defined in the '.env' file.
+  #
+  # This task is only performed during the *initial* startup of the stack. On all
+  # subsequent runs, the service simply returns immediately, without performing
+  # any modification to existing users.
+  setup:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/setup:v1.0.0
+    build:
+      context: setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    init: true
+    volumes:
+      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./setup/lib.sh:/lib.sh:ro,Z
+      - ./setup/roles:/roles:ro,Z
+      - setup:/state:Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
+      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
+    networks:
+      - elk_network
+      - traefik-public
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/elasticsearch:v1.0.0
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch:/usr/share/elasticsearch/data:Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.elasticsearch-http.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.elasticsearch-http.entrypoints=http
+          - traefik.http.routers.elasticsearch-http.middlewares=https-redirect
+          - traefik.http.routers.elasticsearch-https.rule=Host(`elasticsearch.elk.smarthis.com.br`)
+          - traefik.http.routers.elasticsearch-https.entrypoints=https
+          - traefik.http.routers.elasticsearch-https.tls=true
+          - traefik.http.routers.elasticsearch-https.tls.certresolver=le
+          - traefik.http.services.elasticsearch.loadbalancer.server.port=9200
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # Bootstrap password.
+      # Used to initialize the keystore during the initial startup of
+      # Elasticsearch. Ignored on subsequent runs.
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
+    networks:
+      - elk_network
+      - traefik-public
+    restart: unless-stopped
+
+  logstash:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/logstash:v1.0.0
+    build:
+      context: logstash/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.logstash-http.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.logstash-http.entrypoints=http
+          - traefik.http.routers.logstash-http.middlewares=https-redirect
+          - traefik.http.routers.logstash-https.rule=Host(`logstash.elk.smarthis.com.br`)
+          - traefik.http.routers.logstash-https.entrypoints=https
+          - traefik.http.routers.logstash-https.tls=true
+          - traefik.http.routers.logstash-https.tls.certresolver=le
+          - traefik.http.services.logstash.loadbalancer.server.port=5044
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD}
+    networks:
+      - elk_network
+      - traefik-public
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  kibana:
+    image: 526932095279.dkr.ecr.us-east-1.amazonaws.com/elk/kibana:v1.0.0
+    build:
+      context: kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    deploy:
+        labels:
+          - traefik.enable=true
+          - traefik.docker.network=traefik-public
+          - traefik.constraint-label=traefik-public
+          - traefik.http.routers.kibana-http.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.kibana-http.entrypoints=http
+          - traefik.http.routers.kibana-http.middlewares=https-redirect
+          - traefik.http.routers.kibana-https.rule=Host(`kibana.elk.smarthis.com.br`)
+          - traefik.http.routers.kibana-https.entrypoints=https
+          - traefik.http.routers.kibana-https.tls=true
+          - traefik.http.routers.kibana-https.tls.certresolver=le
+          - traefik.http.services.kibana.loadbalancer.server.port=5601
+    ports:
+      - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+    networks:
+      - elk_network
+      - traefik-public
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+networks:
+  elk_network:
+    #driver: bridge
+    attachable: true
+  traefik-public:
+    external: true
+
+
+volumes:
+  setup:
+  elasticsearch:

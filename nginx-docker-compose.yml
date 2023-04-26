@@ -9,6 +9,20 @@ services:
   # This task is only performed during the *initial* startup of the stack. On all
   # subsequent runs, the service simply returns immediately, without performing
   # any modification to existing users.
+  proxy:
+      #build: ./nginx
+      image: nginx:1.20.1
+      #entrypoint: dockerize -template /app/nginx/default.temp.conf:/etc/nginx/conf.d/default.conf -wait tcp://app:8000 nginx
+      ports:
+        - 80:80
+        - 443:443
+      networks:
+        - bot_network
+      volumes:
+        - ./nginx:/etc/nginx/conf.d
+        - ./nginx/default.conf:/etc/nginx/nginx.conf:ro
+        - /home/ubuntu/tls:/etc/nginx/certs
+
   setup:
     build:
       context: setup/
