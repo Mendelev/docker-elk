@@ -17,11 +17,11 @@ services:
         - 80:80
         - 443:443
       networks:
-        - bot_network
+        - elk
       volumes:
         - ./nginx:/etc/nginx/conf.d
         - ./nginx/default.conf:/etc/nginx/nginx.conf:ro
-        - /home/ubuntu/tls:/etc/nginx/certs
+        - ./tls:/etc/nginx/certs
 
   setup:
     build:
