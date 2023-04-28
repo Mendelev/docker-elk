@@ -4,6 +4,7 @@
 #
 server.name: kibana
 server.host: 0.0.0.0
+server.publicBaseUrl: https://elk.smarthis.com.br
 elasticsearch.hosts: [ http://elasticsearch:9200 ]
 
 monitoring.ui.container.elasticsearch.enabled: true
